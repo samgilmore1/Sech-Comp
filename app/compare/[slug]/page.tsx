@@ -267,4 +267,29 @@ export default async function ComparePage({
 
                   return (
                     <div key={item.key} className="grid grid-cols-12 py-3 px-4 sm:px-6 hover:bg-neutral-800/20 transition-colors">
-                      <div className="col-span-4 flex items
+                      <div className="col-span-4 flex items-center justify-start text-xs sm:text-sm">
+                        <span className={`font-medium ${winner === 'A' ? 'text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20' : 'text-neutral-300'}`}>
+                          {typeof valA === 'boolean' ? (valA ? <Check className="w-4 h-4 text-emerald-400" /> : <X className="w-4 h-4 text-neutral-500" />) : `${valA ?? '—'}${valA && item.unit ? item.unit : ''}`}
+                        </span>
+                      </div>
+
+                      <div className="col-span-4 flex items-center justify-center text-center">
+                        <span className="text-xs text-neutral-400 font-medium uppercase tracking-tight">{item.label}</span>
+                      </div>
+
+                      <div className="col-span-4 flex items-center justify-end text-xs sm:text-sm">
+                        <span className={`font-medium ${winner === 'B' ? 'text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20' : 'text-neutral-300'}`}>
+                          {typeof valB === 'boolean' ? (valB ? <Check className="w-4 h-4 text-emerald-400" /> : <X className="w-4 h-4 text-neutral-500" />) : `${valB ?? '—'}${valB && item.unit ? item.unit : ''}`}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </section>
+      </main>
+    </div>
+  );
+}
