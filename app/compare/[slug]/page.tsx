@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
 import Image from 'next/image';
@@ -114,6 +113,12 @@ function parseSlug(slugParam: string) {
   const parts = slugParam.split('-vs-');
   if (parts.length !== 2) return null;
   return { slugA: parts[0], slugB: parts[1] };
+}
+
+export async function generateStaticParams() {
+  return [
+    { slug: 'apple-iphone-17-pro-max-vs-samsung-galaxy-s26-ultra' },
+  ];
 }
 
 export async function generateMetadata({
@@ -248,43 +253,4 @@ export default async function ComparePage({
             <h3 className="font-bold text-lg text-white">Full Technical Specifications</h3>
           </div>
 
-          {SPEC_CONFIG.map((group, groupIdx) => (
-            <div key={group.category} className={groupIdx !== 0 ? 'border-t border-neutral-800' : ''}>
-              <div className="px-6 py-2 bg-neutral-950/60 text-xs font-semibold uppercase tracking-wider text-blue-400 border-b border-neutral-800/60">
-                {group.category}
-              </div>
-
-              <div className="divide-y divide-neutral-800/50">
-                {group.items.map((item) => {
-                  const valA = productA.specs[item.key];
-                  const valB = productB.specs[item.key];
-                  const winner = getWinner(item, valA, valB);
-
-                  return (
-                    <div key={item.key} className="grid grid-cols-12 py-3 px-4 sm:px-6 hover:bg-neutral-800/20 transition-colors">
-                      <div className="col-span-4 flex items-center justify-start text-xs sm:text-sm">
-                        <span className={`font-medium ${winner === 'A' ? 'text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20' : 'text-neutral-300'}`}>
-                          {typeof valA === 'boolean' ? (valA ? <Check className="w-4 h-4 text-emerald-400" /> : <X className="w-4 h-4 text-neutral-500" />) : `${valA ?? '—'}${valA && item.unit ? item.unit : ''}`}
-                        </span>
-                      </div>
-
-                      <div className="col-span-4 flex items-center justify-center text-center">
-                        <span className="text-xs text-neutral-400 font-medium uppercase tracking-tight">{item.label}</span>
-                      </div>
-
-                      <div className="col-span-4 flex items-center justify-end text-xs sm:text-sm">
-                        <span className={`font-medium ${winner === 'B' ? 'text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20' : 'text-neutral-300'}`}>
-                          {typeof valB === 'boolean' ? (valB ? <Check className="w-4 h-4 text-emerald-400" /> : <X className="w-4 h-4 text-neutral-500" />) : `${valB ?? '—'}${valB && item.unit ? item.unit : ''}`}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </section>
-      </main>
-    </div>
-  );
-}
+          {
