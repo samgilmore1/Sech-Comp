@@ -1,162 +1,149 @@
-// app/compare/[slug]/page.tsx
-import { Metadata } from 'next';
-import { notFound, permanentRedirect } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
-import { Check, X, ExternalLink, ShieldCheck } from 'lucide-react';
-import { CATALOG, CATEGORY_SPECS, getAllCanonicalPairs, SpecField } from '@/lib/catalog';
+import Image from 'next/image';
+import { CATALOG, Category } from '@/lib/catalog';
+import MatchupPicker from '@/components/MatchupPicker';
+import { Layers, Sparkles, Zap, ArrowUpRight } from 'lucide-react';
 
-interface PageProps {
-  params: Promise<{ slug: string }>;
-}
+const CATEGORIES: { id: Category; label: string }[] = [
+  { id: 'gaming-monitors', label: 'Gaming Monitors' },
+  { id: 'professional-monitors', label: 'Pro Displays' },
+  { id: 'tvs', label: '4K & OLED TVs' },
+  { id: 'headphones', label: 'Headphones' },
+  { id: 'earbuds', label: 'Earbuds' },
+  { id: 'smartphones', label: 'Smartphones' },
+];
 
-function parseSlug(slugParam: string) {
-  const parts = slugParam.split('-vs-');
-  if (parts.length !== 2) return null;
-  return { slugA: parts[0], slugB: parts[1] };
-}
+// Featured pairings for high-intent SEO indexing
+const FEATURED_MATCHUPS = [
+  {
+    category: 'Gaming Monitors',
+    slugA: 'asus-rog-swift-pg32ucdm',
+    slugB: 'dell-alienware-aw3225qf',
+  },
+  {
+    category: 'Pro Displays',
+    slugA: 'apple-studio-display',
+    slugB: 'dell-ultrasharp-u3224kb',
+  },
+  {
+    category: 'OLED TVs',
+    slugA: 'lg-oled-g4-65',
+    slugB: 'samsung-s95d-65',
+  },
+  {
+    category: 'Headphones',
+    slugA: 'bose-quietcomfort-ultra-hp',
+    slugB: 'sony-wh-1000xm5',
+  },
+  {
+    category: 'Earbuds',
+    slugA: 'apple-airpods-pro-2',
+    slugB: 'sony-wf-1000xm5',
+  },
+  {
+    category: 'Smartphones',
+    slugA: 'apple-iphone-17-pro-max',
+    slugB: 'samsung-galaxy-s26-ultra',
+  },
+];
 
-export async function generateStaticParams() {
-  return getAllCanonicalPairs();
-}
-
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const parsed = parseSlug(slug);
-  if (!parsed) return {};
-
-  const productA = CATALOG[parsed.slugA];
-  const productB = CATALOG[parsed.slugB];
-  if (!productA || !productB) return {};
-
-  return {
-    title: `${productA.model} vs ${productB.model} Comparison: Specs, Tests & Value`,
-    description: `Side-by-side comparison of ${productA.brand} ${productA.model} and ${productB.brand} ${productB.model}.`,
-  };
-}
-
-export default async function ComparePage({ params }: PageProps) {
-  const { slug } = await params;
-  const parsed = parseSlug(slug);
-  if (!parsed) notFound();
-
-  const canonicalSlug = [parsed.slugA, parsed.slugB].sort().join('-vs-');
-  if (slug !== canonicalSlug) {
-    permanentRedirect(`/compare/${canonicalSlug}`);
-  }
-
-  const productA = CATALOG[parsed.slugA];
-  const productB = CATALOG[parsed.slugB];
-
-  if (!productA || !productB || productA.category !== productB.category) {
-    notFound();
-  }
-
-  const specGroups = CATEGORY_SPECS[productA.category] || [];
-
-  const getWinner = (field: SpecField, valA: any, valB: any): 'A' | 'B' | null => {
-    if (field.type !== 'number' || valA === valB || typeof valA !== 'number' || typeof valB !== 'number') {
-      return null;
-    }
-    if (field.higherIsBetter) return valA > valB ? 'A' : 'B';
-    return valA < valB ? 'A' : 'B';
-  };
+export default function HomePage() {
+  const allProducts = Object.values(CATALOG);
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 antialiased selection:bg-blue-600 selection:text-white pb-20">
-      {/* Breadcrumb */}
-      <div className="max-w-6xl mx-auto px-4 pt-6 pb-2 text-xs text-neutral-400">
-        <Link href="/" className="hover:text-blue-400 transition-colors">Home</Link>
-        <span className="mx-2">/</span>
-        <span className="capitalize">{productA.category.replace('-', ' ')}</span>
-        <span className="mx-2">/</span>
-        <span className="text-neutral-200 font-medium">{productA.model} vs {productB.model}</span>
-      </div>
+    <div className="min-h-screen bg-neutral-950 text-neutral-100 antialiased selection:bg-blue-600 selection:text-white">
+      {/* Background glow accents */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-blue-600/10 blur-[130px] pointer-events-none" />
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <header className="text-center mb-10">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 mb-4">
-            <ShieldCheck className="w-3.5 h-3.5" /> Technical Spec Comparison
-          </span>
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-3">
-            {productA.model} <span className="text-blue-500">vs</span> {productB.model}
+      {/* Header Bar */}
+      <header className="border-b border-neutral-800/80 bg-neutral-950/60 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+          <Link href="/" className="font-extrabold text-xl tracking-tight text-white flex items-center gap-2">
+            <span className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-xs font-black text-white">S</span>
+            Sech<span className="text-blue-500">Comp</span>
+          </Link>
+          <div className="text-xs text-neutral-400 font-medium hidden sm:flex items-center gap-4">
+            <span className="flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-blue-400" /> Unbiased Benchmarks</span>
+            <span className="flex items-center gap-1.5"><Layers className="w-3.5 h-3.5 text-blue-400" /> Automated Specs</span>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
+        {/* Hero Section */}
+        <section className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 mb-4">
+            <Sparkles className="w-3.5 h-3.5" /> High-Performance Consumer Tech Benchmarks
+          </div>
+          <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white mb-4">
+            Compare Tech Specs. <br />
+            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+              Without the Bias.
+            </span>
           </h1>
-          <p className="text-neutral-400 text-sm md:text-base max-w-2xl mx-auto">
-            Comprehensive specs, hardware differentials, and value evaluation.
+          <p className="text-neutral-400 text-sm sm:text-base">
+            Direct, algorithmic hardware comparisons across flagships, gaming monitors, high-fidelity acoustics, and displays.
           </p>
-        </header>
-
-        {/* Head-to-Head Cards */}
-        <section className="grid grid-cols-2 gap-3 sm:gap-6 mb-12">
-          {[productA, productB].map((item) => (
-            <div key={item.id} className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-4 sm:p-6 flex flex-col items-center text-center">
-              <div className="relative w-36 h-36 sm:w-52 sm:h-52 mb-4">
-                <Image
-                  src={item.imageUrl}
-                  alt={item.model}
-                  fill
-                  sizes="(max-width: 640px) 150px, 250px"
-                  className="object-contain"
-                  priority
-                />
-              </div>
-              <span className="text-xs uppercase tracking-wider text-neutral-500 font-bold mb-1">{item.brand}</span>
-              <h2 className="text-base sm:text-xl font-bold text-white mb-2">{item.model}</h2>
-              <div className="text-2xl sm:text-3xl font-black text-blue-400 mb-4">
-                ${(item.priceCents / 100).toFixed(0)}
-              </div>
-              <a
-                href={item.affiliateUrl}
-                className="w-full mt-auto py-2.5 sm:py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-600/20"
-              >
-                <span>View Current Deal</span>
-                <ExternalLink className="w-4 h-4" />
-              </a>
-            </div>
-          ))}
         </section>
 
-        {/* Spec Comparison Table */}
-        <section className="bg-neutral-900/40 border border-neutral-800/80 rounded-2xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-neutral-800 bg-neutral-900/80">
-            <h3 className="font-bold text-lg text-white">Full Technical Specifications</h3>
+        {/* Interactive Matchmaker Widget */}
+        <section className="max-w-4xl mx-auto mb-20">
+          <MatchupPicker products={allProducts} categories={CATEGORIES} />
+        </section>
+
+        {/* Featured Popular Matchups */}
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">Popular Flagship Comparisons</h2>
+              <p className="text-xs sm:text-sm text-neutral-400">Direct spec showdowns between category market leaders.</p>
+            </div>
           </div>
 
-          {specGroups.map((group, groupIdx) => (
-            <div key={group.group} className={groupIdx !== 0 ? 'border-t border-neutral-800' : ''}>
-              <div className="px-6 py-2 bg-neutral-950/60 text-xs font-semibold uppercase tracking-wider text-blue-400 border-b border-neutral-800/60">
-                {group.group}
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {FEATURED_MATCHUPS.map((match) => {
+              const prodA = CATALOG[match.slugA];
+              const prodB = CATALOG[match.slugB];
+              if (!prodA || !prodB) return null;
 
-              <div className="divide-y divide-neutral-800/50">
-                {group.fields.map((field) => {
-                  const valA = productA.specs[field.key];
-                  const valB = productB.specs[field.key];
-                  const winner = getWinner(field, valA, valB);
+              const canonicalSlug = [prodA.slug, prodB.slug].sort().join('-vs-');
 
-                  return (
-                    <div key={field.key} className="grid grid-cols-12 py-3 px-4 sm:px-6 hover:bg-neutral-800/20 transition-colors">
-                      <div className="col-span-4 flex items-center justify-start text-xs sm:text-sm">
-                        <span className={`font-medium ${winner === 'A' ? 'text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20' : 'text-neutral-300'}`}>
-                          {typeof valA === 'boolean' ? (valA ? <Check className="w-4 h-4 text-emerald-400" /> : <X className="w-4 h-4 text-neutral-500" />) : `${valA ?? '—'}${valA && field.unit ? field.unit : ''}`}
-                        </span>
+              return (
+                <Link
+                  key={canonicalSlug}
+                  href={`/compare/${canonicalSlug}`}
+                  className="group bg-neutral-900/40 hover:bg-neutral-900/80 border border-neutral-800 hover:border-neutral-700 rounded-2xl p-5 transition-all flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between text-xs text-neutral-500 font-semibold uppercase tracking-wider mb-4">
+                    <span>{match.category}</span>
+                    <ArrowUpRight className="w-4 h-4 text-neutral-600 group-hover:text-blue-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 items-center py-2 mb-4">
+                    <div className="flex flex-col items-center text-center">
+                      <div className="relative w-20 h-20 mb-2">
+                        <Image src={prodA.imageUrl} alt={prodA.model} fill className="object-contain" sizes="80px" />
                       </div>
-
-                      <div className="col-span-4 flex items-center justify-center text-center">
-                        <span className="text-xs text-neutral-400 font-medium uppercase tracking-tight">{field.label}</span>
-                      </div>
-
-                      <div className="col-span-4 flex items-center justify-end text-xs sm:text-sm">
-                        <span className={`font-medium ${winner === 'B' ? 'text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20' : 'text-neutral-300'}`}>
-                          {typeof valB === 'boolean' ? (valB ? <Check className="w-4 h-4 text-emerald-400" /> : <X className="w-4 h-4 text-neutral-500" />) : `${valB ?? '—'}${valB && field.unit ? field.unit : ''}`}
-                        </span>
-                      </div>
+                      <span className="text-xs font-semibold text-neutral-200 line-clamp-1">{prodA.model}</span>
+                      <span className="text-xs text-blue-400 font-bold">${(prodA.priceCents / 100).toFixed(0)}</span>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+
+                    <div className="flex flex-col items-center text-center">
+                      <div className="relative w-20 h-20 mb-2">
+                        <Image src={prodB.imageUrl} alt={prodB.model} fill className="object-contain" sizes="80px" />
+                      </div>
+                      <span className="text-xs font-semibold text-neutral-200 line-clamp-1">{prodB.model}</span>
+                      <span className="text-xs text-blue-400 font-bold">${(prodB.priceCents / 100).toFixed(0)}</span>
+                    </div>
+                  </div>
+
+                  <div className="w-full py-2 rounded-xl bg-neutral-800/40 group-hover:bg-blue-600/10 text-neutral-300 group-hover:text-blue-400 text-xs font-semibold text-center border border-transparent group-hover:border-blue-500/20 transition-all">
+                    Compare Specs
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         </section>
       </main>
     </div>
