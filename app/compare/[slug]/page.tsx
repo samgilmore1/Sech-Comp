@@ -253,4 +253,18 @@ export default async function ComparePage({
             <h3 className="font-bold text-lg text-white">Full Technical Specifications</h3>
           </div>
 
-          {
+          {SPEC_CONFIG.map((group, groupIdx) => (
+            <div key={group.category} className={groupIdx !== 0 ? 'border-t border-neutral-800' : ''}>
+              <div className="px-6 py-2 bg-neutral-950/60 text-xs font-semibold uppercase tracking-wider text-blue-400 border-b border-neutral-800/60">
+                {group.category}
+              </div>
+
+              <div className="divide-y divide-neutral-800/50">
+                {group.items.map((item) => {
+                  const valA = productA.specs[item.key];
+                  const valB = productB.specs[item.key];
+                  const winner = getWinner(item, valA, valB);
+
+                  return (
+                    <div key={item.key} className="grid grid-cols-12 py-3 px-4 sm:px-6 hover:bg-neutral-800/20 transition-colors">
+                      <div className="col-span-4 flex items
